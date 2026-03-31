@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: teeup
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GOLFNOW_AFFILIATE_ID
+        value: ""
+      - key: GOOGLE_PLACES_KEY
+        value: ""

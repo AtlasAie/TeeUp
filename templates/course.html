@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ course_name }} — TeeUp{% endblock %}
+
+{% block content %}
+<div class="course-detail-page">
+
+  <!-- HERO -->
+  <div class="course-hero">
+    <div class="course-hero-content">
+      <div class="container">
+        <a href="/search?location={{ location|urlencode }}&date={{ search_date }}&players={{ players }}" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+          Back to results
+        </a>
+        <h1 class="course-hero-name">{{ course_name }}</h1>
+        <div class="course-hero-meta">
+          {% if location %}<span>📍 {{ location }}</span>{% endif %}
+          <span>⛳ 18 holes</span>
+          <span>Public Course</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="course-body">
+
+      <!-- MAIN CONTENT -->
+      <div class="course-main">
+
+        <!-- Available Tee Times -->
+        <div class="course-section">
+          <h2>Available Tee Times — {{ search_date }}</h2>
+          <div class="tee-times-grid">
+            {% if course.get('tee_times') %}
+              {% for tt in course.tee_times %}
+              <div class="tee-time-card">
+                <span class="tt-time">{{ tt.get('time','') }}</span>
+                <span class="tt-price">${{ tt.get('price', 0) }}</span>
+                <span class="tt-avail">{{ players }} spot{{ 's' if players > 1 }} available</span>
+                <a href="/book/{{ course_id }}?name={{ course_name|urlencode }}&time={{ tt.get('time','')|urlencode }}&date={{ search_date }}&players={{ players }}&price={{ tt.get('price',0) }}"
+                   class="tt-book-btn">Book Now</a>
+              </div>
+              {% endfor %}
+            {% else %}
+              {% for t in ['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM'] %}
+              <div class="tee-time-card">
+                <span class="tt-time">{{ t }}</span>
+                <span class="tt-price">${{ course.get('price', course.get('min_price', 45)) }}</span>
+                <span class="tt-avail">{{ players }} spot{{ 's' if players > 1 }}</span>
+                <a href="/book/{{ course_id }}?name={{ course_name|urlencode }}&time={{ t|urlencode }}&date={{ search_date }}&players={{ players }}&price={{ course.get('price', course.get('min_price', 45)) }}"
+                   class="tt-book-btn">Book Now</a>
+              </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Course Info -->
+        <!-- Amenities -->
+        <div class="course-section">
+          <h2>Amenities</h2>
+          <div class="amenities-grid">
+            <div class="amenity"><div class="amenity-icon">🛒</div>Pro Shop</div>
+            <div class="amenity"><div class="amenity-icon">🚗</div>Golf Carts</div>
+            <div class="amenity"><div class="amenity-icon">🎯</div>Driving Range</div>
+            <div class="amenity"><div class="amenity-icon">🥗</div>Clubhouse / Dining</div>
+            <div class="amenity"><div class="amenity-icon">👟</div>Club Rental</div>
+            <div class="amenity"><div class="amenity-icon">📚</div>Lessons Available</div>
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="course-section">
+          <h2>Reviews</h2>
+          {% if false %}{# placeholder for real reviews #}{% else %}
+            <div class="review-item">
+              <div class="review-header">
+                <span class="reviewer-name">Michael R.</span>
+                <span class="review-date">March 2026</span>
+              </div>
+              <div class="review-rating">★★★★★</div>
+              <p class="review-text">Great course, well maintained. The staff was friendly and the greens were in excellent condition. Will definitely be back.</p>
+            </div>
+            <div class="review-item">
+              <div class="review-header">
+                <span class="reviewer-name">Sarah K.</span>
+                <span class="review-date">February 2026</span>
+              </div>
+              <div class="review-rating">★★★★</div>
+              <p class="review-text">Beautiful layout with some challenging holes. Booking through TeeUp was seamless. Price was fair for the quality.</p>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="book-sidebar">
+        <div class="book-widget">
+          <h3>Book a Tee Time</h3>
+          <div class="book-form-fields">
+            <div class="book-field">
+              <label>Date</label>
+              <input type="date" value="{{ search_date }}" id="sideDate" min="{{ today }}">
+            </div>
+            <div class="book-field">
+              <label>Players</label>
+              <select id="sidePlayers">
+                {% for n in range(1,5) %}
+                <option value="{{ n }}" {% if n==players %}selected{% endif %}>{{ n }} Player{{ 's' if n>1 }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <button onclick="sidebarSearch()" class="book-main-btn">Find Tee Times</button>
+          <p class="book-note">No booking fees · Instant confirmation</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function sidebarSearch() {
+  const date = document.getElementById('sideDate').value;
+  const players = document.getElementById('sidePlayers').value;
+  window.location = `/course/{{ course_id }}?name={{ course_name|urlencode }}&date=${date}&players=${players}&location={{ location|urlencode }}`;
+}
+</script>
+{% endblock %}

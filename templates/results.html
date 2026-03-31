@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block title %}Tee Times near {{ location }} — TeeUp{% endblock %}
+
+{% block content %}
+<div class="results-page">
+
+  <!-- SEARCH BAR (compact) -->
+  <div class="results-search-bar">
+    <div class="container">
+      <form action="/search" method="GET" class="results-form">
+        <div class="search-row-compact">
+          <div class="rf-field">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="text" name="location" value="{{ location }}" placeholder="Location" class="rf-input">
+          </div>
+          <div class="rf-field">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" name="date" value="{{ search_date }}" min="{{ today }}" class="rf-input">
+          </div>
+          <div class="rf-field">
+            <select name="players" class="rf-input">
+              {% for n in range(1,5) %}
+              <option value="{{ n }}" {% if n==players %}selected{% endif %}>{{ n }} Player{{ 's' if n>1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="rf-btn">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="container results-layout">
+
+    <!-- SIDEBAR FILTERS -->
+    <aside class="filter-sidebar">
+      <h3>Filter Results</h3>
+
+      <div class="filter-section">
+        <label class="filter-label">Sort By</label>
+        <select class="filter-select-full" onchange="resort(this.value)">
+          <option value="time" {% if sort_by=='time' %}selected{% endif %}>Earliest Time</option>
+          <option value="price_asc" {% if sort_by=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort_by=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+          <option value="rating" {% if sort_by=='rating' %}selected{% endif %}>Top Rated</option>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Price Range</label>
+        <div class="price-inputs">
+          <input type="number" placeholder="Min $" class="price-input" id="minPrice" min="0">
+          <span>—</span>
+          <input type="number" placeholder="Max $" class="price-input" id="maxPrice" min="0">
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Tee Time</label>
+        <div class="time-filters">
+          <label class="check-label"><input type="checkbox" value="morning" checked onchange="filterTime()"> Morning (before noon)</label>
+          <label class="check-label"><input type="checkbox" value="afternoon" checked onchange="filterTime()"> Afternoon (noon–4pm)</label>
+          <label class="check-label"><input type="checkbox" value="evening" checked onchange="filterTime()"> Evening (after 4pm)</label>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Course Type</label>
+        <div class="time-filters">
+          <label class="check-label"><input type="checkbox" checked> Public</label>
+          <label class="check-label"><input type="checkbox" checked> Resort</label>
+          <label class="check-label"><input type="checkbox"> Private</label>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">Amenities</label>
+        <div class="time-filters">
+          <label class="check-label"><input type="checkbox"> Cart Included</label>
+          <label class="check-label"><input type="checkbox"> Driving Range</label>
+          <label class="check-label"><input type="checkbox"> Club Rental</label>
+          <label class="check-label"><input type="checkbox"> Pro Shop</label>
+        </div>
+      </div>
+
+      <button class="apply-filters-btn">Apply Filters</button>
+    </aside>
+
+    <!-- RESULTS -->
+    <div class="results-main">
+      <div class="results-header">
+        <div class="results-meta">
+          {% if error %}
+            <p class="results-error">{{ error }}</p>
+          {% else %}
+            <h2 class="results-count">
+              {% if results %}
+                {{ result_count }} tee time{{ 's' if result_count != 1 }} near <strong>{{ location }}</strong>
+              {% else %}
+                Searching near <strong>{{ location }}</strong>...
+              {% endif %}
+            </h2>
+            <p class="results-date">{{ search_date }} · {{ players }} player{{ 's' if players > 1 }}</p>
+          {% endif %}
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="listBtn" onclick="setView('list')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            List
+          </button>
+          <button class="view-btn" id="mapBtn" onclick="setView('map')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            Map
+          </button>
+        </div>
+      </div>
+
+      {% if not results and not error %}
+      <!-- DEMO RESULTS when API has no data -->
+      <div id="resultsList" class="results-list">
+        {% set demo_courses = [
+          ('Bloomington Country Club', 'Bloomington, IL', 4.3, '$45', '8:00 AM', '1001'),
+          ('The Den at Fox Creek', 'Bloomington, IL', 4.1, '$38', '9:30 AM', '1002'),
+          ('Timber Pointe Golf Course', 'Hudson, IL', 4.5, '$52', '10:00 AM', '1003'),
+          ('Prairie Vista Golf Course', 'Bloomington, IL', 3.9, '$29', '11:00 AM', '1004'),
+          ('Hawk\'s Landing Golf Club', 'Normal, IL', 4.2, '$41', '1:00 PM', '1005'),
+        ] %}
+        {% for name, loc, rating, price, time, cid in demo_courses %}
+        <div class="course-card">
+          <div class="course-img">
+            <div class="course-img-placeholder">⛳</div>
+            <button class="fav-btn {% if cid in fav_ids %}favorited{% endif %}" onclick="toggleFav('{{ cid }}', '{{ name }}', '{{ loc }}', this)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if cid in fav_ids %}#ef4444{% else %}none{% endif %}" stroke="{% if cid in fav_ids %}#ef4444{% else %}currentColor{% endif %}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </button>
+          </div>
+          <div class="course-info">
+            <div class="course-top">
+              <div>
+                <h3 class="course-name">{{ name }}</h3>
+                <p class="course-loc">📍 {{ loc }}</p>
+              </div>
+              <div class="course-rating">
+                <span class="stars">★</span> {{ rating }}
+              </div>
+            </div>
+            <div class="course-times">
+              {% for t in ['8:00 AM','9:00 AM','10:30 AM','11:00 AM','1:00 PM','2:30 PM'] %}
+              <a href="/book/{{ cid }}?name={{ name | urlencode }}&time={{ t | urlencode }}&date={{ search_date }}&players={{ players }}&price={{ price[1:] }}"
+                 class="time-slot">{{ t }}</a>
+              {% endfor %}
+            </div>
+            <div class="course-footer">
+              <div class="course-price">From <strong>{{ price }}</strong>/player</div>
+              <div class="course-badges">
+                <span class="badge">18 Holes</span>
+                <span class="badge">Cart Available</span>
+              </div>
+              <a href="/course/{{ cid }}?name={{ name | urlencode }}&date={{ search_date }}&players={{ players }}&location={{ location | urlencode }}"
+                 class="course-detail-link">View Course →</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% elif results %}
+      <div id="resultsList" class="results-list">
+        {% for course in results %}
+        {% set cid = course.get('id', loop.index)|string %}
+        {% set cname = course.get('name', course.get('course_name', 'Golf Course')) %}
+        {% set cloc = course.get('city','') ~ ', ' ~ course.get('state','') %}
+        {% set crating = course.get('rating', course.get('average_rating', 0)) %}
+        {% set cprice = course.get('price', course.get('min_price', 0)) %}
+        <div class="course-card" data-price="{{ cprice }}" data-rating="{{ crating }}">
+          <div class="course-img">
+            {% if course.get('image_url') %}
+            <img src="{{ course.image_url }}" alt="{{ cname }}" loading="lazy">
+            {% else %}
+            <div class="course-img-placeholder">⛳</div>
+            {% endif %}
+            <button class="fav-btn {% if cid in fav_ids %}favorited{% endif %}"
+                    onclick="toggleFav('{{ cid }}','{{ cname }}','{{ cloc }}',this)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if cid in fav_ids %}#ef4444{% else %}none{% endif %}" stroke="{% if cid in fav_ids %}#ef4444{% else %}currentColor{% endif %}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </button>
+          </div>
+          <div class="course-info">
+            <div class="course-top">
+              <div>
+                <h3 class="course-name">{{ cname }}</h3>
+                <p class="course-loc">📍 {{ cloc }}</p>
+              </div>
+              {% if crating %}
+              <div class="course-rating"><span class="stars">★</span> {{ crating }}</div>
+              {% endif %}
+            </div>
+            <div class="course-times">
+              {% for tt in course.get('tee_times', []) %}
+              <a href="/book/{{ cid }}?name={{ cname|urlencode }}&time={{ tt.get('time','') | urlencode }}&date={{ search_date }}&players={{ players }}&price={{ tt.get('price',0) }}"
+                 class="time-slot">{{ tt.get('time','') }}</a>
+              {% else %}
+              <a href="/book/{{ cid }}?name={{ cname|urlencode }}&date={{ search_date }}&players={{ players }}"
+                 class="time-slot">Check Times</a>
+              {% endfor %}
+            </div>
+            <div class="course-footer">
+              <div class="course-price">
+                {% if cprice %}From <strong>${{ cprice }}</strong>/player{% endif %}
+              </div>
+              <a href="/course/{{ cid }}?name={{ cname|urlencode }}&date={{ search_date }}&players={{ players }}&location={{ location|urlencode }}"
+                 class="course-detail-link">View Course →</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <div class="no-results">
+        <div class="no-results-icon">🔍</div>
+        <h3>No tee times found</h3>
+        <p>Try a different date, location, or player count.</p>
+        <a href="/" class="btn-primary-sm">New Search</a>
+      </div>
+      {% endif %}
+
+      <!-- MAP VIEW (hidden by default) -->
+      <div id="mapView" class="map-view" style="display:none;">
+        <div class="map-placeholder">
+          <p>🗺️ Map view — courses pinned near {{ location }}</p>
+          <small>Interactive map coming soon</small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setView(v) {
+  document.getElementById('resultsList') && (document.getElementById('resultsList').style.display = v==='list'?'block':'none');
+  document.getElementById('mapView').style.display = v==='map'?'block':'none';
+  document.getElementById('listBtn').classList.toggle('active', v==='list');
+  document.getElementById('mapBtn').classList.toggle('active', v==='map');
+}
+
+function resort(val) {
+  const url = new URL(window.location);
+  url.searchParams.set('sort', val);
+  window.location = url;
+}
+
+async function toggleFav(courseId, courseName, courseLoc, btn) {
+  {% if not user %}
+  window.location = '/login';
+  return;
+  {% endif %}
+  const r = await fetch('/api/favorite', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({course_id: courseId, course_name: courseName, course_city: courseLoc})
+  });
+  const d = await r.json();
+  const svg = btn.querySelector('svg');
+  if (d.favorited) {
+    svg.setAttribute('fill','#ef4444');
+    svg.setAttribute('stroke','#ef4444');
+    btn.classList.add('favorited');
+  } else {
+    svg.setAttribute('fill','none');
+    svg.setAttribute('stroke','currentColor');
+    btn.classList.remove('favorited');
+  }
+}
+</script>
+{% endblock %}

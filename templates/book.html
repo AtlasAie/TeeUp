@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Book Tee Time at {{ course_name }} — TeeUp{% endblock %}
+
+{% block content %}
+<div class="booking-page">
+  <div class="container">
+    <div class="booking-layout">
+
+      <!-- LEFT: FORM -->
+      <div class="booking-form-col">
+
+        <!-- Step 1: Golfer Info -->
+        <div class="booking-card">
+          <h2>
+            <span class="step-badge">1</span>
+            Golfer Information
+          </h2>
+          <form action="/book/{{ course_id }}" method="POST" id="bookingForm">
+            <input type="hidden" name="course_name" value="{{ course_name }}">
+            <input type="hidden" name="course_id" value="{{ course_id }}">
+            <input type="hidden" name="tee_time" value="{{ tee_time }}">
+            <input type="hidden" name="date" value="{{ search_date }}">
+            <input type="hidden" name="players" value="{{ players }}">
+            <input type="hidden" name="price" value="{{ price }}">
+
+            <!-- Lead golfer (Player 1) -->
+            <div class="player-block">
+              <h4>Player 1 (Lead Golfer)</h4>
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" name="contact_name" class="form-input" required
+                         value="{{ user.name if user else '' }}" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" name="contact_email" class="form-input" required
+                         value="{{ user.email if user else '' }}" placeholder="Confirmation email">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone</label>
+                  <input type="tel" name="contact_phone" class="form-input" placeholder="(555) 000-0000">
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional players -->
+            {% for i in range(2, players + 1) %}
+            <div class="player-block">
+              <h4>Player {{ i }} <span style="font-weight:400;color:#9ca3af;">(optional)</span></h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" name="player{{ i }}_first" class="form-input" placeholder="First name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" name="player{{ i }}_last" class="form-input" placeholder="Last name">
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            <!-- Special requests -->
+            <div class="form-group full" style="margin-top:8px;">
+              <label class="form-label">Special Requests <span style="color:#9ca3af;font-weight:400;">(optional)</span></label>
+              <textarea name="notes" class="form-input" rows="2" placeholder="Cart preference, accessibility needs, etc." style="resize:vertical;"></textarea>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2: Payment -->
+        <div class="booking-card">
+          <h2>
+            <span class="step-badge">2</span>
+            Payment Details
+          </h2>
+          <div class="payment-icons">
+            <span class="pay-icon">VISA</span>
+            <span class="pay-icon">MC</span>
+            <span class="pay-icon">AMEX</span>
+            <span class="pay-icon">DISC</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Card Number</label>
+              <input type="text" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" id="cardNum">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiration Date</label>
+              <input type="text" class="form-input" placeholder="MM / YY" maxlength="7" id="expiry">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV</label>
+              <input type="text" class="form-input" placeholder="123" maxlength="4" id="cvv">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Name on Card</label>
+              <input type="text" class="form-input" placeholder="Full name as it appears on card">
+            </div>
+          </div>
+          <p style="font-size:.78rem;color:#9ca3af;margin-top:12px;">
+            🔒 Your payment info is encrypted and never stored on our servers.
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button form="bookingForm" type="submit" class="submit-booking-btn">
+          Confirm Booking · ${{ "%.2f"|format(price|float * players|int) }}
+        </button>
+        <p style="font-size:.78rem;color:#9ca3af;text-align:center;margin-top:8px;">
+          Free cancellation up to 24 hours before your tee time.
+        </p>
+
+      </div>
+
+      <!-- RIGHT: ORDER SUMMARY -->
+      <div class="order-summary">
+        <h3>Order Summary</h3>
+
+        <div style="margin-bottom:16px;">
+          <div class="summary-course-name">{{ course_name }}</div>
+          <div class="summary-detail">📅 {{ book_date }}</div>
+          <div class="summary-detail">🕐 {{ tee_time }}</div>
+          <div class="summary-detail">👥 {{ players }} player{{ 's' if players > 1 }}</div>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row">
+          <span class="summary-label">Green fee (×{{ players }})</span>
+          <span class="summary-value">${{ "%.2f"|format(price|float * players) }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Booking fee</span>
+          <span class="summary-value" style="color:#16a34a;">FREE</span>
+        </div>
+        <div class="summary-row total">
+          <span class="summary-label">Total</span>
+          <span class="summary-value">${{ "%.2f"|format(price|float * players) }}</span>
+        </div>
+
+        <div class="guarantee-badge">
+          ✅ Free cancellation · Instant confirmation
+        </div>
+
+        <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:8px;">
+          <p style="font-size:.78rem;color:#6b7280;line-height:1.6;">
+            By completing this booking you agree to the course's cancellation policy and TeeUp's <a href="#" style="color:#166534;">Terms of Service</a>.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Card number formatting
+const cardNum = document.getElementById('cardNum');
+if (cardNum) {
+  cardNum.addEventListener('input', (e) => {
+    let v = e.target.value.replace(/\D/g, '').slice(0,16);
+    e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
+  });
+}
+
+// Expiry formatting
+const expiry = document.getElementById('expiry');
+if (expiry) {
+  expiry.addEventListener('input', (e) => {
+    let v = e.target.value.replace(/\D/g, '').slice(0,4);
+    if (v.length >= 3) v = v.slice(0,2) + ' / ' + v.slice(2);
+    e.target.value = v;
+  });
+}
+</script>
+{% endblock %}

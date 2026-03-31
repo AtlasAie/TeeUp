@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'register' %}Create Account{% else %}Sign In{% endif %} — TeeUp{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="#166534"/>
+        <path d="M14 6v10M10 12l4 4 4-4" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="20" r="2" fill="#F59E0B"/>
+      </svg>
+      <span>TeeUp</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <a href="/login" class="auth-tab {% if mode != 'register' %}active{% endif %}">Sign In</a>
+      <a href="/register" class="auth-tab {% if mode == 'register' %}active{% endif %}">Create Account</a>
+    </div>
+
+    {% if mode == 'register' %}
+    <!-- REGISTER -->
+    <h1 class="auth-title">Join TeeUp</h1>
+    <p class="auth-sub">Find and book tee times at any course in the US.</p>
+
+    <form action="/register" method="POST" class="auth-form">
+      <div class="auth-group">
+        <label class="auth-label" for="name">Full Name</label>
+        <input type="text" id="name" name="name" class="auth-input" placeholder="Your name" required autocomplete="name">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label" for="email">Email</label>
+        <input type="email" id="email" name="email" class="auth-input" placeholder="you@email.com" required autocomplete="email">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="auth-input" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label" for="password2">Confirm Password</label>
+        <input type="password" id="password2" name="password2" class="auth-input" placeholder="Repeat password" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="auth-submit">Create Free Account</button>
+      <p class="auth-switch">Already have an account? <a href="/login">Sign in</a></p>
+    </form>
+
+    {% else %}
+    <!-- LOGIN -->
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Sign in to access your bookings and favorites.</p>
+
+    <form action="/login" method="POST" class="auth-form">
+      <div class="auth-group">
+        <label class="auth-label" for="email">Email</label>
+        <input type="email" id="email" name="email" class="auth-input" placeholder="you@email.com" required autocomplete="email">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="auth-input" placeholder="Your password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="auth-submit">Sign In</button>
+      <p class="auth-switch">Don't have an account? <a href="/register">Join free</a></p>
+    </form>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

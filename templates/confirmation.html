@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed — TeeUp{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+  <div class="container">
+    <div class="confirmation-card">
+
+      <!-- Header -->
+      <div class="confirmation-header">
+        <div class="confirm-icon">✅</div>
+        <h1>You're all set!</h1>
+        <p>Your tee time is confirmed. See you on the course.</p>
+        <div class="confirm-code">{{ booking.confirmation_code }}</div>
+      </div>
+
+      <!-- Body -->
+      <div class="confirmation-body">
+
+        <div class="confirm-section">
+          <h3>Booking Details</h3>
+          <div class="confirm-details">
+            <div class="confirm-detail">
+              <div class="cd-label">Course</div>
+              <div class="cd-value">{{ booking.course_name }}</div>
+            </div>
+            <div class="confirm-detail">
+              <div class="cd-label">Date</div>
+              <div class="cd-value">{{ booking.date }}</div>
+            </div>
+            <div class="confirm-detail">
+              <div class="cd-label">Tee Time</div>
+              <div class="cd-value">{{ booking.tee_time }}</div>
+            </div>
+            <div class="confirm-detail">
+              <div class="cd-label">Players</div>
+              <div class="cd-value">{{ booking.players }}</div>
+            </div>
+            <div class="confirm-detail">
+              <div class="cd-label">Total Paid</div>
+              <div class="cd-value" style="color:#166534;font-size:1.05rem;">${{ "%.2f"|format(booking.price|float * booking.players|int) }}</div>
+            </div>
+            <div class="confirm-detail">
+              <div class="cd-label">Confirmation #</div>
+              <div class="cd-value" style="font-family:monospace;">{{ booking.confirmation_code }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="confirm-section" style="padding:14px;background:#f0fdf4;border-radius:8px;margin-bottom:20px;">
+          <p style="font-size:.875rem;color:#166534;">
+            📧 A confirmation email has been sent to <strong>{{ booking.contact_email }}</strong>
+          </p>
+        </div>
+
+        <div class="confirm-section">
+          <h3>What's Next</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:.875rem;color:#4b5563;">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="font-size:1rem;">🕐</span>
+              <span>Arrive <strong>15–20 minutes early</strong> to check in at the pro shop.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="font-size:1rem;">📱</span>
+              <span>Show your confirmation code <strong>{{ booking.confirmation_code }}</strong> at check-in.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="font-size:1rem;">❌</span>
+              <span>Free cancellation up to <strong>24 hours</strong> before your tee time.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="confirm-actions">
+          {% if user %}
+          <a href="/bookings" class="btn-confirm-primary">View My Bookings</a>
+          {% endif %}
+          <a href="/search" class="btn-confirm-outline">Book Another Round</a>
+          <a href="/" class="btn-confirm-outline">Home</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
