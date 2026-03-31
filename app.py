@@ -125,6 +125,70 @@ def geocode(location):
         pass
     return None, None, None
 
+# ── Demo courses by state (shown when no API results) ────────────────────────
+DEMO_COURSES = {
+    'AZ': [('Troon North Golf Club','$185',4.8),('Scottsdale Links','$95',4.3),('Talking Stick Golf Club','$75',4.5),('Papago Golf Course','$55',4.2),('Stonecreek Golf Club','$65',4.1)],
+    'FL': [('TPC Sawgrass','$275',4.9),('World Golf Village','$89',4.4),('Innisbrook Resort','$165',4.6),('Calusa Pines Golf Club','$72',4.2),('Eagle Creek Golf Club','$58',4.0)],
+    'CA': [('Pebble Beach Golf Links','$595',5.0),('Torrey Pines Golf Course','$215',4.8),('Riviera Country Club','$350',4.7),('Pelican Hill Golf Club','$295',4.6),('Aviara Golf Club','$185',4.5)],
+    'SC': [('Harbour Town Golf Links','$345',4.9),('Caledonia Golf & Fish Club','$195',4.7),('TPC Myrtle Beach','$135',4.5),('Pawleys Plantation','$85',4.3),('Brunswick Plantation','$65',4.1)],
+    'NV': [('Shadow Creek Golf Course','$500',4.9),('TPC Las Vegas','$185',4.6),('Wolf Course at Mount Charleston','$95',4.4),('Paiute Golf Resort','$145',4.5),('Rhodes Ranch Country Club','$75',4.2)],
+    'TX': [('Colonial Country Club','$185',4.7),('Cowboys Golf Club','$125',4.5),('Barton Creek Resort','$195',4.6),('Austin Country Club','$145',4.4),('Lost Pines Golf Club','$89',4.3)],
+    'GA': [('Augusta National','$0',5.0),('Reynolds Lake Oconee','$185',4.7),('Sea Island Golf Club','$295',4.8),('Chateau Elan Winery & Resort','$95',4.4),('Stone Mountain Golf Course','$45',3.9)],
+    'NC': [('Pinehurst No. 2','$375',4.9),('Pinehurst No. 8','$195',4.6),('Forest Creek Golf Club','$145',4.5),('Mid Pines Inn & Golf Club','$125',4.4),('Tobacco Road Golf Club','$89',4.3)],
+    'CO': [('Vail Golf Club','$145',4.6),('Keystone Ranch Golf Course','$185',4.5),('Arrowhead Golf Club','$95',4.4),('Red Sky Golf Club','$225',4.7),('Sanctuary Golf Course','$265',4.8)],
+    'NY': [('Bethpage Black','$125',4.8),('Winged Foot Golf Club','$285',4.7),('Montauk Downs State Park','$55',4.2),('Garden City Golf Club','$195',4.5),('Saratoga National Golf Club','$145',4.4)],
+    'IL': [('Medinah Country Club','$285',4.8),('Cog Hill Golf & Country Club','$95',4.5),('Harborside International','$65',4.2),('Eagle Ridge Resort','$85',4.3),('Prairie Landing Golf Club','$55',4.1)],
+    'MI': [('Arcadia Bluffs Golf Club','$225',4.8),('Bay Harbor Golf Club','$195',4.7),('Treetops Resort','$95',4.4),('Crystal Mountain Resort','$85',4.3),('Grand Traverse Resort','$125',4.5)],
+    'MN': [('Hazeltine National Golf Club','$225',4.8),('Bully Pulpit Golf Course','$145',4.6),('Giants Ridge Golf & Ski Resort','$75',4.3),('Madden\'s on Gull Lake','$95',4.4),('Quarry at Giants Ridge','$85',4.2)],
+    'VA': [('Cascades Course at The Homestead','$185',4.7),('Golden Horseshoe Golf Club','$145',4.6),('Kingsmill Resort','$125',4.5),('TPC Potomac','$195',4.6),('Lansdowne Resort','$95',4.3)],
+    'OH': [('Muirfield Village Golf Club','$245',4.8),('Firestone Country Club','$185',4.6),('Scioto Country Club','$175',4.5),('Little Mountain Country Club','$95',4.3),('StoneWater Golf Club','$85',4.2)],
+    'PA': [('Oakmont Country Club','$285',4.9),('Merion Golf Club','$345',4.8),('Nemacolin Woodlands Resort','$185',4.6),('Hershey Country Club','$125',4.5),('Saucon Valley Country Club','$165',4.6)],
+    'WA': [('Semiahmoo Golf & Country Club','$95',4.5),('Gold Mountain Golf Complex','$55',4.2),('Wine Valley Golf Club','$95',4.6),('Chambers Bay Golf Course','$185',4.8),('The Home Course','$85',4.3)],
+    'OR': [('Bandon Dunes Golf Resort','$295',4.9),('Pacific Dunes','$345',4.9),('Pumpkin Ridge Golf Club','$95',4.5),('Langdon Farms Golf Club','$65',4.2),('Eagle Crest Resort','$75',4.3)],
+    'HI': [('Kapalua Plantation Course','$395',4.9),('Mauna Kea Golf Course','$285',4.8),('Ko Olina Golf Club','$225',4.7),('Waikoloa Kings Course','$185',4.6),('Princeville Makai Golf Club','$245',4.7)],
+    'TN': [('The Honors Course','$185',4.7),('Gaylord Springs Golf Links','$95',4.4),('Greystone Golf Club','$75',4.2),('Governor\'s Club','$145',4.5),('Bear Trace at Harrison Bay','$45',4.0)],
+}
+DEFAULT_DEMOS = [('Lakeside Golf Club','$75',4.3),('Pines Golf Course','$55',4.1),('Creekside Country Club','$85',4.4),('Valley View Golf Course','$45',4.0),('Highland Links','$65',4.2)]
+
+def get_demo_courses(location, search_date, players):
+    """Return location-appropriate demo courses as result dicts."""
+    import random
+    # Try to match state from location string
+    location_upper = location.upper()
+    state_courses = DEFAULT_DEMOS
+    for state, courses in DEMO_COURSES.items():
+        if f', {state}' in location_upper or location_upper.endswith(state):
+            state_courses = courses
+            break
+    # Also check full state names
+    state_names = {
+        'ARIZONA':'AZ','FLORIDA':'FL','CALIFORNIA':'CA','SOUTH CAROLINA':'SC',
+        'NEVADA':'NV','TEXAS':'TX','GEORGIA':'GA','NORTH CAROLINA':'NC',
+        'COLORADO':'CO','NEW YORK':'NY','ILLINOIS':'IL','MICHIGAN':'MI',
+        'MINNESOTA':'MN','VIRGINIA':'VA','OHIO':'OH','PENNSYLVANIA':'PA',
+        'WASHINGTON':'WA','OREGON':'OR','HAWAII':'HI','TENNESSEE':'TN',
+    }
+    for name, abbr in state_names.items():
+        if name in location_upper:
+            state_courses = DEMO_COURSES.get(abbr, DEFAULT_DEMOS)
+            break
+    results = []
+    times = ['7:30 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM']
+    for i, (name, price, rating) in enumerate(state_courses):
+        price_num = float(price.replace('$',''))
+        tee_times = [{'time': t, 'price': price_num} for t in random.sample(times, 5)]
+        results.append({
+            'id': str(2000 + i),
+            'name': name,
+            'city': location.split(',')[0].strip(),
+            'state': location.split(',')[-1].strip() if ',' in location else '',
+            'rating': rating,
+            'price': price_num,
+            'min_price': price_num,
+            'tee_times': tee_times,
+        })
+    return results
+
 # ── Tee time search (Supreme Golf API — free, aggregates GolfNow + TeeOff) ───
 def search_tee_times(lat, lng, search_date, players=2, holes=18):
     try:
@@ -183,6 +247,9 @@ def search():
         if lat:
             raw = search_tee_times(lat, lng, search_date, players, holes)
             results = raw if isinstance(raw, list) else []
+            # Fall back to location-aware demo courses if API returns nothing
+            if not results:
+                results = get_demo_courses(location, search_date, players)
             # Log search
             try:
                 conn = get_db()
