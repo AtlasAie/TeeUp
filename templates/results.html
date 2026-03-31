@@ -119,11 +119,11 @@
       <!-- DEMO RESULTS when API has no data -->
       <div id="resultsList" class="results-list">
         {% set demo_courses = [
-          ('Bloomington Country Club', 'Bloomington, IL', 4.3, '$45', '8:00 AM', '1001'),
-          ('The Den at Fox Creek', 'Bloomington, IL', 4.1, '$38', '9:30 AM', '1002'),
-          ('Timber Pointe Golf Course', 'Hudson, IL', 4.5, '$52', '10:00 AM', '1003'),
-          ('Prairie Vista Golf Course', 'Bloomington, IL', 3.9, '$29', '11:00 AM', '1004'),
-          ('Hawk\'s Landing Golf Club', 'Normal, IL', 4.2, '$41', '1:00 PM', '1005'),
+          ('Sunridge Canyon Golf Club', location, 4.6, '$89', '7:30 AM', '1001'),
+          ('Kierland Golf Club', location, 4.4, '$120', '8:00 AM', '1002'),
+          ('Talking Stick Golf Club', location, 4.3, '$75', '9:00 AM', '1003'),
+          ('Stonecreek Golf Club', location, 4.1, '$65', '10:30 AM', '1004'),
+          ('Papago Golf Course', location, 4.5, '$55', '12:00 PM', '1005'),
         ] %}
         {% for name, loc, rating, price, time, cid in demo_courses %}
         <div class="course-card">
