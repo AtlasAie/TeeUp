@@ -489,6 +489,50 @@ def api_search():
     results = search_tee_times(lat, lng, d, players, holes)
     return jsonify(results)
 
+@app.route('/about')
+def about():
+    return render_template('static_page.html', user=current_user(),
+        title='About TeeUp',
+        heading='About TeeUp',
+        body='''TeeUp is a free golf tee time search and booking platform covering
+        15,000+ courses across all 50 states. Search, compare prices, and book
+        instantly with zero booking fees. Built for golfers, by golfers.''')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('static_page.html', user=current_user(),
+        title='Privacy Policy',
+        heading='Privacy Policy',
+        body='''TeeUp collects only the information necessary to process your bookings —
+        your name, email, and tee time preferences. We never sell your data to third parties.
+        Bookings are processed securely and your payment information is never stored on our servers.
+        For questions contact hello@teeup.app.''')
+
+@app.route('/terms')
+def terms():
+    return render_template('static_page.html', user=current_user(),
+        title='Terms of Service',
+        heading='Terms of Service',
+        body='''By using TeeUp you agree to book tee times for personal use only.
+        TeeUp earns a referral fee when bookings are completed through our affiliate partners.
+        Cancellation policies are set by each individual golf course.
+        TeeUp is not responsible for course closures, weather cancellations, or changes made by the course.
+        For questions contact hello@teeup.app.''')
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('static_page.html', user=current_user(),
+        title='Page Not Found',
+        heading='Page not found',
+        body='The page you\'re looking for doesn\'t exist.'), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template('static_page.html', user=current_user(),
+        title='Something went wrong',
+        heading='Something went wrong',
+        body='An error occurred. Please try again or go back to the homepage.'), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(host='0.0.0.0', port=port, debug=True)

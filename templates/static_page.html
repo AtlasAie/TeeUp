@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — TeeUp{% endblock %}
+{% block content %}
+<div style="padding: calc(var(--nav-h) + 60px) 0 80px; min-height: 100vh; background: var(--gray-50);">
+  <div class="container" style="max-width: 680px;">
+    <h1 style="font-size:2rem;font-weight:800;color:#111827;margin-bottom:16px;">{{ heading }}</h1>
+    <p style="font-size:1rem;color:#4b5563;line-height:1.8;margin-bottom:28px;">{{ body }}</p>
+    <a href="/" class="btn-primary-sm">← Back to Home</a>
+  </div>
+</div>
+{% endblock %}
